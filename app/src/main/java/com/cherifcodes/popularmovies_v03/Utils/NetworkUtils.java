@@ -3,6 +3,8 @@ package com.cherifcodes.popularmovies_v03.Utils;
 import android.net.Uri;
 import android.util.Log;
 
+import com.cherifcodes.popularmovies_v03.BuildConfig;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -15,20 +17,15 @@ public class NetworkUtils {
     private static final String TAG = NetworkUtils.class.getSimpleName();
 
     //Define URL component strings
-    private static final String BASE_URL_STRING = "https://api.themoviedb.org/3/discover/movie";
-    private static final String MY_API_KEY = "b6969fae18f7b310cc279e92d93795c3";
+    public static final String BASE_URL_POPULAR = "https://api.themoviedb.org/3/movie/popular";
+    public static final String BASE_URL_TOP_RATED = "https://api.themoviedb.org/3/movie/top_rated";
+    private static final String MY_API_KEY = BuildConfig.API_KEY;
     private static final String KEY_FOR_MY_API_KEY = "api_key";
-    private static final String KEY_FOR_SORT_BY = "sort_by";
     private static final String LANGUAGE = "en-US";
     private static final String KEY_FOR_LANGUAGE = "language";
 
     //Define the based url for the movie poster to be fetched through Picasso
     public static final String POSTER_BASE_URL = "http://image.tmdb.org/t/p/w200";
-
-    //Define sorting choices
-    public static final String SORT_BY_POPULARITY = "popularity.desc";
-    public static final String SORT_BY_VOTE_AVERAGE = "vote_average.desc";
-    public static final String SORT_BY_RELEASE_DATE = "release_date.desc";
 
     //Define HttpConnection settings
     private static final int READ_TIMEOUT = 10000;
@@ -37,15 +34,14 @@ public class NetworkUtils {
 
     /**
      * Builds a url needed to communicate with the theMovieDb database
-     * @param sortByChoice the desired movie sort-order
+     * @param baseUrlString the desired movie endpoint base url
      * @return the built URL
      */
-    public static URL buildUrl(String sortByChoice) {
+    public static URL buildUrl(String baseUrlString) {
 
         //build the Uri from the strings
-        Uri uri = Uri.parse(BASE_URL_STRING).buildUpon()
+        Uri uri = Uri.parse(baseUrlString).buildUpon()
                 .appendQueryParameter(KEY_FOR_MY_API_KEY, MY_API_KEY)
-                .appendQueryParameter(KEY_FOR_SORT_BY, sortByChoice)
                 .appendQueryParameter(KEY_FOR_LANGUAGE, LANGUAGE)
                 .build();
 
@@ -99,7 +95,7 @@ public class NetworkUtils {
                     e.printStackTrace();
                 }
             }
-           if (urlConnection != null) urlConnection.disconnect();
+            if (urlConnection != null) urlConnection.disconnect();
         }
 
         return jsonResponseString;

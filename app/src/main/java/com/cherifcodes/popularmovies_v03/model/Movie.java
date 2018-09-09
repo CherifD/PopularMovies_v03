@@ -1,12 +1,14 @@
 package com.cherifcodes.popularmovies_v03.model;
 
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 @Entity (tableName = "movie")
 public class Movie implements Parcelable{
-
+    @PrimaryKey
     private int id;
     private String mOriginalTitle;
     private String mPosterString;
@@ -47,6 +49,7 @@ public class Movie implements Parcelable{
     }
 
     @Override
+    @Ignore
     public String toString() {
         return "Movie{" +
                 "\nid= '" + id + '\'' +
@@ -58,6 +61,7 @@ public class Movie implements Parcelable{
                 '}';
     }
 
+    @Ignore
     public Movie(Parcel in) {
         this.id = in.readInt();
         this.mOriginalTitle = in.readString();
@@ -67,6 +71,7 @@ public class Movie implements Parcelable{
         this.mVoteAverage = in.readDouble();
     }
 
+    @Ignore
     public static final Creator CREATOR = new Creator() {
         public Movie createFromParcel(Parcel in) {
             return new Movie(in);
@@ -77,11 +82,13 @@ public class Movie implements Parcelable{
         }
     };
 
+    @Ignore
     @Override
     public int describeContents() {
         return 0;
     }
 
+    @Ignore
     @Override
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeInt(this.id);

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
@@ -13,8 +12,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:background="@android:color/holo_blue_light"
-       />
+        android:background="@android:color/holo_blue_light"/>
 
     <TextView
         android:id="@+id/tv_movie_title"
@@ -25,6 +23,5 @@
         android:layout_marginStart="8dp"
         android:background="#cfdbe7"
         android:textSize="16sp"
-        android:textStyle="bold"
-        />
+        android:textStyle="bold"/>
 </LinearLayout>

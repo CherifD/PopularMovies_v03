@@ -1,9 +1,10 @@
 <resources>
-    <string name="app_name">PopularMovies</string>
+    <string name="app_name">PopularMovies Part II</string>
     <string name="vote_average_label">Vote Average:\u0020</string>
     <string name="released_date_label">Released on:\u0020</string>
     <string name="unknown_sort_message">unknown sort option!</string>
     <string name="sort_by_most_popular">sort by most popular</string>
     <string name="sort_by_highest_rated">sort by highest rated</string>
     <string name="sort_by_release_date">sort by release date</string>
+    <string name="no_internet_error_message">Please check your Internet connection and try again.</string>
 </resources>
