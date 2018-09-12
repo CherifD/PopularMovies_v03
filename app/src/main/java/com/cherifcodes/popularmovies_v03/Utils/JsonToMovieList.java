@@ -19,6 +19,9 @@ public class JsonToMovieList {
     private static final String RELEASE_DATE = "release_date";
     private static final String VOTE_AVERAGE = "vote_average";
 
+    public static final String VIDEO_TRAILER_DETAIL_KEY = "key";
+    public static final String REVIEWS_DETAIL_KEY = "content";
+
 
     /**
      * Parses a JSON string to create a Movie object
@@ -53,4 +56,33 @@ public class JsonToMovieList {
 
         return movieList;
     }
+
+    /**
+     * Gets a list of movie details, such as videos, or reviews, from a given JSON result
+     *
+     * @param json      the specified JSON result string
+     * @param detailKey the movie detail result key (i.e. "key" for video trailers or "content" for
+     *                  movie reviews)
+     * @return a List of strings representing movie video trailers or movie reviews
+     */
+    public static List<String> getMovieDetailListFromJson(String json, String detailKey) {
+
+        List<String> movieDetailList = new ArrayList<>();
+
+        try {
+            JSONObject rootJsonObject = new JSONObject(json);
+            JSONArray jsonArrayOfDetails = rootJsonObject.getJSONArray(RESULTS);
+
+            for (int i = 0; i < jsonArrayOfDetails.length(); i++) {
+                JSONObject movieDetailJsonObject = jsonArrayOfDetails.getJSONObject(i);
+                movieDetailList.add(movieDetailJsonObject.getString(detailKey));
+            }
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+
+        return movieDetailList;
+    }
+
+
 }

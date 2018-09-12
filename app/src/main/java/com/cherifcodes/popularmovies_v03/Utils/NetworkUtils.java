@@ -27,10 +27,46 @@ public class NetworkUtils {
     //Define the based url for the movie poster to be fetched through Picasso
     public static final String POSTER_BASE_URL = "http://image.tmdb.org/t/p/w200";
 
+    //Define the base url for fetching trailers for a specified movie id
+    public static final String TRAILER_BASE_URL = "https://api.themoviedb.org/3/movie/";
+
+    //Represents the video trailer end-point type.
+    public static final String DETAIL_VIDEO_TRAILERS = "videos";
+
+    //Represents the reviews end-point type
+    public static final String DETAIL_REVIEWS = "reviews";
+
     //Define HttpConnection settings
     private static final int READ_TIMEOUT = 10000;
     private static final int CONNECTION_TIMEOUT = 15000;
     private static final String HTTP_REQUEST_METHOD = "GET";
+
+    /**
+     * Builds a URL for fetching movie details based on specified movie id and movie
+     * detail
+     *
+     * @param movieId     the id for the specified movie
+     * @param movieDetail the detail specifying the url end-point type (i.e. videos or reviews)
+     * @return the URL for the specified movie detail
+     */
+    public static URL buildMovieDetailUrlFromId(int movieId, String movieDetail) {
+        //build the Uri from the strings
+        Uri uri = Uri.parse(TRAILER_BASE_URL + String.valueOf(movieId) + "/" + movieDetail)
+                .buildUpon()
+                .appendQueryParameter(KEY_FOR_MY_API_KEY, MY_API_KEY)
+                .appendQueryParameter(KEY_FOR_LANGUAGE, LANGUAGE)
+                .build();
+
+        //Construct the URL from the Uri
+        URL url = null;
+        try {
+            url = new URL(uri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return url;
+    }
 
     /**
      * Builds a url needed to communicate with the theMovieDb database
