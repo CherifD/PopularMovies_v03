@@ -1,5 +1,7 @@
 package com.cherifcodes.popularmovies_v03;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cherifcodes.popularmovies_v03.UI.MovieTrailerAdapter;
+import com.cherifcodes.popularmovies_v03.UI.TrailerClickListener;
 import com.cherifcodes.popularmovies_v03.Utils.IntentConstants;
 import com.cherifcodes.popularmovies_v03.Utils.JsonToMovieList;
 import com.cherifcodes.popularmovies_v03.Utils.NetworkUtils;
@@ -22,7 +25,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MovieDetailsActivity extends AppCompatActivity {
+public class MovieDetailsActivity extends AppCompatActivity implements TrailerClickListener {
 
     @BindView(R.id.tv_details_movie_title) TextView mOriginalTitleTextView;
     @BindView(R.id.imv_details_movie_poster) ImageView mPosterImageView;
@@ -58,14 +61,26 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
             RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
             movieTrailerRecycleView.setLayoutManager(layoutManager);
-            mMovieTrailerAdapter = new MovieTrailerAdapter();
+            mMovieTrailerAdapter = new MovieTrailerAdapter(this);
             movieTrailerRecycleView.setAdapter(mMovieTrailerAdapter);
             new MovieTrailerAsynTask().execute(NetworkUtils.DETAIL_VIDEO_TRAILERS);
 
         } else {
             Log.e(MovieDetailsActivity.class.getSimpleName(), "Null clickedMovie");
         }
+    }
 
+    @Override
+    public void OnTrailerClicked(String trailerLink) {
+        Uri webpage = Uri.parse(NetworkUtils.YOUTUBE_BASE_URL + trailerLink);
+
+        Log.i(getClass().getSimpleName(), webpage.toString());
+
+        Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 
     private class MovieTrailerAsynTask extends AsyncTask<String, Void, List<String>> {

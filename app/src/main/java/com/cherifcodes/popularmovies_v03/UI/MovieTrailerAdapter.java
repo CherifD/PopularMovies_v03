@@ -5,7 +5,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.cherifcodes.popularmovies_v03.R;
@@ -17,9 +16,11 @@ public class MovieTrailerAdapter extends RecyclerView.Adapter<MovieTrailerAdapte
         .MovieTrailerViewHolder> {
 
     private List<String> movieTrailerList;
+    private TrailerClickListener mTtrailerClickListener;
 
-    public MovieTrailerAdapter() {
+    public MovieTrailerAdapter(TrailerClickListener trailerClickListener) {
         this.movieTrailerList = new ArrayList<>();
+        this.mTtrailerClickListener = trailerClickListener;
     }
 
     public void setMovieTrailerList(List<String> trailerList) {
@@ -38,10 +39,8 @@ public class MovieTrailerAdapter extends RecyclerView.Adapter<MovieTrailerAdapte
 
     @Override
     public void onBindViewHolder(@NonNull final MovieTrailerViewHolder holder, int position) {
-
         String trailerLink = movieTrailerList.get(position);
-        holder.trailerTitleTextView.setText(trailerLink + ": " + position);
-
+        holder.trailerTitleTextView.setText(trailerLink + " Trailer: " + position);
     }
 
     @Override
@@ -53,18 +52,18 @@ public class MovieTrailerAdapter extends RecyclerView.Adapter<MovieTrailerAdapte
     public class MovieTrailerViewHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener {
 
-        private ImageButton playButtonImageButton;
         private TextView trailerTitleTextView;
 
         public MovieTrailerViewHolder(View itemView) {
             super(itemView);
-            playButtonImageButton = itemView.findViewById(R.id.imv_play_button);
             trailerTitleTextView = itemView.findViewById(R.id.tv_trailer_title);
+            itemView.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View v) {
-
+            String trailerLink = movieTrailerList.get(getAdapterPosition());
+            mTtrailerClickListener.OnTrailerClicked(trailerLink);
         }
     }
 

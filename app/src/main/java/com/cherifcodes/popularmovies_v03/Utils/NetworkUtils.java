@@ -30,6 +30,9 @@ public class NetworkUtils {
     //Define the base url for fetching trailers for a specified movie id
     public static final String TRAILER_BASE_URL = "https://api.themoviedb.org/3/movie/";
 
+    //Represents the base url for launching the Youtube trailer videos
+    public static final String YOUTUBE_BASE_URL = "https://www.youtube.com/watch?v=";
+
     //Represents the video trailer end-point type.
     public static final String DETAIL_VIDEO_TRAILERS = "videos";
 
