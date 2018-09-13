@@ -5,8 +5,8 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
@@ -93,8 +93,10 @@ public class MainActivity extends AppCompatActivity implements MovieClickListene
 
     @Override
     public void onMovieClicked(Movie clickedMovie) {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(IntentConstants.CLICKED_MOVIE_ITEM, clickedMovie);
         Intent intent = new Intent(MainActivity.this, MovieDetailsActivity.class);
-        intent.putExtra(IntentConstants.CLICKED_MOVIE_ITEM, clickedMovie);
+        intent.putExtra(IntentConstants.BUNDLE_KEY, bundle);
         this.startActivity(intent);
     }
 

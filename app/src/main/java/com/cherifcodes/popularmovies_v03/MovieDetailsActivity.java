@@ -11,6 +11,7 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.cherifcodes.popularmovies_v03.UI.MovieReviewAdapter;
 import com.cherifcodes.popularmovies_v03.UI.MovieTrailerAdapter;
 import com.cherifcodes.popularmovies_v03.UI.TrailerClickListener;
 import com.cherifcodes.popularmovies_v03.Utils.IntentConstants;
@@ -34,8 +35,12 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
     @BindView(R.id.tv_details_movie_overview) TextView mOverviewTextView;
     @BindView(R.id.rv_movie_trailer)
     RecyclerView movieTrailerRecycleView;
+    @BindView(R.id.rv_movie_review)
+    RecyclerView movieReviewsRecycleView;
+
     private int mMovieId;
     private MovieTrailerAdapter mMovieTrailerAdapter;
+    private MovieReviewAdapter mMovieReviewAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +48,8 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
         setContentView(R.layout.activity_movie_details);
         ButterKnife.bind(this);
 
-        Bundle extra = getIntent().getExtras();
-        Movie clickedMovie = extra.getParcelable(IntentConstants.CLICKED_MOVIE_ITEM);
+        Bundle bundle = getIntent().getBundleExtra(IntentConstants.BUNDLE_KEY);
+        Movie clickedMovie = bundle.getParcelable(IntentConstants.CLICKED_MOVIE_ITEM);
 
         if (clickedMovie != null) {
             mOriginalTitleTextView.setText(clickedMovie.getOriginalTitle());
@@ -60,10 +65,18 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
                     .into(mPosterImageView);
 
             RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+            RecyclerView.LayoutManager reviewsLayoutManager = new LinearLayoutManager(this);
+            movieReviewsRecycleView.setLayoutManager(reviewsLayoutManager);
             movieTrailerRecycleView.setLayoutManager(layoutManager);
+
             mMovieTrailerAdapter = new MovieTrailerAdapter(this);
+            mMovieReviewAdapter = new MovieReviewAdapter();
+
             movieTrailerRecycleView.setAdapter(mMovieTrailerAdapter);
+            movieReviewsRecycleView.setAdapter(mMovieReviewAdapter);
+
             new MovieTrailerAsynTask().execute(NetworkUtils.DETAIL_VIDEO_TRAILERS);
+            new MovieReviewAsyncTask().execute(NetworkUtils.DETAIL_REVIEWS);
 
         } else {
             Log.e(MovieDetailsActivity.class.getSimpleName(), "Null clickedMovie");
@@ -80,6 +93,27 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
 
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
+        }
+    }
+
+    private class MovieReviewAsyncTask extends AsyncTask<String, Void, List<String>> {
+
+        @Override
+        protected List<String> doInBackground(String... strings) {
+
+            URL reviewsUrl = NetworkUtils.buildMovieDetailUrlFromId(mMovieId,
+                    NetworkUtils.DETAIL_REVIEWS);
+            String reviewsJson = NetworkUtils.getJsonResponse(reviewsUrl);
+            List<String> reviewsList = JsonToMovieList.getMovieDetailListFromJson(reviewsJson,
+                    JsonToMovieList.REVIEWS_DETAIL_KEY);
+            return reviewsList;
+        }
+
+        @Override
+        protected void onPostExecute(List<String> reviewsList) {
+            if (reviewsList != null) {
+                mMovieReviewAdapter.setReviewList(reviewsList);
+            }
         }
     }
 

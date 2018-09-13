@@ -40,7 +40,7 @@ public class MovieTrailerAdapter extends RecyclerView.Adapter<MovieTrailerAdapte
     @Override
     public void onBindViewHolder(@NonNull final MovieTrailerViewHolder holder, int position) {
         String trailerLink = movieTrailerList.get(position);
-        holder.trailerTitleTextView.setText(trailerLink + " Trailer: " + position);
+        holder.trailerTitleTextView.setText("Trailer: " + position);
     }
 
     @Override
