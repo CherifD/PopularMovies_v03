@@ -1,6 +1,8 @@
 package com.cherifcodes.popularmovies_v03;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -8,16 +10,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ToggleButton;
 
-import com.cherifcodes.popularmovies_v03.UI.MovieReviewAdapter;
-import com.cherifcodes.popularmovies_v03.UI.MovieTrailerAdapter;
-import com.cherifcodes.popularmovies_v03.UI.TrailerClickListener;
-import com.cherifcodes.popularmovies_v03.Utils.IntentConstants;
-import com.cherifcodes.popularmovies_v03.Utils.JsonToMovieList;
-import com.cherifcodes.popularmovies_v03.Utils.NetworkUtils;
+import com.cherifcodes.popularmovies_v03.adaptersAndListeners.MovieReviewAdapter;
+import com.cherifcodes.popularmovies_v03.adaptersAndListeners.MovieTrailerAdapter;
+import com.cherifcodes.popularmovies_v03.adaptersAndListeners.TrailerClickListener;
 import com.cherifcodes.popularmovies_v03.model.Movie;
+import com.cherifcodes.popularmovies_v03.utils.ImageIO;
+import com.cherifcodes.popularmovies_v03.utils.IntentConstants;
+import com.cherifcodes.popularmovies_v03.utils.JsonToMovieList;
+import com.cherifcodes.popularmovies_v03.utils.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
 import java.net.URL;
@@ -41,6 +47,8 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
     private int mMovieId;
     private MovieTrailerAdapter mMovieTrailerAdapter;
     private MovieReviewAdapter mMovieReviewAdapter;
+
+    public static final String DIRECTORY_NAME = "movie_posters";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,9 +86,53 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
             new MovieTrailerAsynTask().execute(NetworkUtils.DETAIL_VIDEO_TRAILERS);
             new MovieReviewAsyncTask().execute(NetworkUtils.DETAIL_REVIEWS);
 
+            ToggleButton toggle = findViewById(R.id.tgb_like_movie);
+            toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    Toast toast = Toast.makeText(MovieDetailsActivity.this,
+                            "Saved movie.", Toast.LENGTH_LONG);
+                    if (isChecked) {
+                        Bitmap currPosterImage = ((BitmapDrawable) mPosterImageView.getDrawable())
+                                .getBitmap();
+                        likeMovie(currPosterImage);
+                        toast.show();
+                    } else {
+                        toast.setText("Movie has been un-liked.");
+                        toast.show();
+                        unlikeMovie();
+                    }
+                }
+            });
+
         } else {
             Log.e(MovieDetailsActivity.class.getSimpleName(), "Null clickedMovie");
         }
+    }
+
+    /**
+     * Saves the movie to the local database and the specified image to internal storage
+     *
+     * @param bitmapImage the specified movie poster image
+     */
+    private void likeMovie(Bitmap bitmapImage) {
+        new ImageIO(this)
+                .setDirectoryName(DIRECTORY_NAME)
+                .setFileName(String.valueOf(mMovieId))
+                .save(bitmapImage);
+
+        //TODO save the movie to the local database
+    }
+
+    /**
+     * Deletes the movie from the local database and its poster image from internal storage
+     */
+    private void unlikeMovie() {
+        new ImageIO(this)
+                .setDirectoryName(DIRECTORY_NAME)
+                .setFileName(String.valueOf(mMovieId))
+                .deleteFile();
+
+        //TODO delete the move from local database
     }
 
     @Override

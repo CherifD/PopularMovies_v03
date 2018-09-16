@@ -1,4 +1,4 @@
-package com.cherifcodes.popularmovies_v03.UI;
+package com.cherifcodes.popularmovies_v03.adaptersAndListeners;
 
 import com.cherifcodes.popularmovies_v03.model.Movie;
 

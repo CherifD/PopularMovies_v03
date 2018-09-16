@@ -8,4 +8,6 @@
     <string name="sort_by_release_date">sort by release date</string>
     <string name="no_internet_error_message">Please check your Internet connection and try again.</string>
     <string name="trailer_title">Trailer</string>
+    <string name="toggle_button_off_message">like movie</string>
+    <string name="toggle_button_on_message">un-like</string>
 </resources>

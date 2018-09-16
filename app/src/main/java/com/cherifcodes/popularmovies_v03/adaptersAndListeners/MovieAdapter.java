@@ -1,4 +1,4 @@
-package com.cherifcodes.popularmovies_v03.UI;
+package com.cherifcodes.popularmovies_v03.adaptersAndListeners;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -10,8 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cherifcodes.popularmovies_v03.R;
-import com.cherifcodes.popularmovies_v03.Utils.NetworkUtils;
 import com.cherifcodes.popularmovies_v03.model.Movie;
+import com.cherifcodes.popularmovies_v03.utils.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;

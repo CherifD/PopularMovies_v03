@@ -8,7 +8,7 @@ import android.os.Parcelable;
 
 @Entity (tableName = "movie")
 public class Movie implements Parcelable{
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     private int id;
     private String mOriginalTitle;
     private String mPosterString;
@@ -19,6 +19,16 @@ public class Movie implements Parcelable{
     public Movie(int id, String originalTitle, String posterString, String releaseDate,
                  String mOverview, double voteAverage) {
         this.id = id;
+        this.mOriginalTitle = originalTitle;
+        this.mPosterString = posterString;
+        this.mReleaseDate = releaseDate;
+        this.mOverview = mOverview;
+        this.mVoteAverage = voteAverage;
+    }
+
+    @Ignore
+    public Movie(String originalTitle, String posterString, String releaseDate,
+                 String mOverview, double voteAverage) {
         this.mOriginalTitle = originalTitle;
         this.mPosterString = posterString;
         this.mReleaseDate = releaseDate;

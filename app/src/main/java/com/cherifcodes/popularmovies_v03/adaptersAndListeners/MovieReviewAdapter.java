@@ -1,4 +1,4 @@
-package com.cherifcodes.popularmovies_v03.UI;
+package com.cherifcodes.popularmovies_v03.adaptersAndListeners;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;

@@ -14,12 +14,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.cherifcodes.popularmovies_v03.UI.MovieAdapter;
-import com.cherifcodes.popularmovies_v03.UI.MovieClickListener;
-import com.cherifcodes.popularmovies_v03.Utils.IntentConstants;
-import com.cherifcodes.popularmovies_v03.Utils.JsonToMovieList;
-import com.cherifcodes.popularmovies_v03.Utils.NetworkUtils;
+import com.cherifcodes.popularmovies_v03.adaptersAndListeners.MovieAdapter;
+import com.cherifcodes.popularmovies_v03.adaptersAndListeners.MovieClickListener;
 import com.cherifcodes.popularmovies_v03.model.Movie;
+import com.cherifcodes.popularmovies_v03.utils.IntentConstants;
+import com.cherifcodes.popularmovies_v03.utils.JsonToMovieList;
+import com.cherifcodes.popularmovies_v03.utils.NetworkUtils;
 
 import java.net.URL;
 import java.util.List;

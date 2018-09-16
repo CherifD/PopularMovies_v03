@@ -1,4 +1,4 @@
-package com.cherifcodes.popularmovies_v03.Utils;
+package com.cherifcodes.popularmovies_v03.utils;
 
 import com.cherifcodes.popularmovies_v03.model.Movie;
 

@@ -1,4 +1,4 @@
-package com.cherifcodes.popularmovies_v03.Utils;
+package com.cherifcodes.popularmovies_v03.utils;
 
 public class IntentConstants {
     //Used to transfer movie parcel from MainActivity to MovieDetailsActivity
