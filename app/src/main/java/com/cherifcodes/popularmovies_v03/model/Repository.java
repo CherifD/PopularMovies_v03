@@ -24,7 +24,6 @@ public class Repository {
             instance = new Repository();
             return instance;
         }
-
         return instance;
     }
 
@@ -35,7 +34,6 @@ public class Repository {
                 db.getMovieDao().insert(movie);
             }
         });
-
     }
 
     public void deleteMovie(final Movie movie) {
@@ -49,5 +47,14 @@ public class Repository {
 
     public LiveData<List<Movie>> loadAllMovies() {
         return db.getMovieDao().loadAllMovies();
+    }
+
+    public void updateMovie(final Movie movie) {
+        mExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                db.getMovieDao().update(movie);
+            }
+        });
     }
 }

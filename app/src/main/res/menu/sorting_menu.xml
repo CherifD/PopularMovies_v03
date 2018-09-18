@@ -12,5 +12,9 @@
         android:id="@+id/item_top_rated_sort"
         android:title="@string/sort_by_highest_rated"
         app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/item_favorites"
+        android:title="dispay favorites"
+        app:showAsAction="ifRoom" />
 
 </menu>

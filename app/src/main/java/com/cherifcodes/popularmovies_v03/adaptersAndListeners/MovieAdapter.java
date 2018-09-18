@@ -1,6 +1,7 @@
 package com.cherifcodes.popularmovies_v03.adaptersAndListeners;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,6 +12,8 @@ import android.widget.TextView;
 
 import com.cherifcodes.popularmovies_v03.R;
 import com.cherifcodes.popularmovies_v03.model.Movie;
+import com.cherifcodes.popularmovies_v03.utils.ImageIO;
+import com.cherifcodes.popularmovies_v03.utils.LocalImageConstants;
 import com.cherifcodes.popularmovies_v03.utils.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
@@ -20,6 +23,7 @@ import java.util.List;
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
 
     private List<Movie> mMovieList;
+    private boolean mIsLocalList;
     private MovieClickListener mMovieClickListener;
 
     public MovieAdapter(MovieClickListener movieClickListener) {
@@ -27,8 +31,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         mMovieList = new ArrayList<>();
     }
 
-    public void setMovieList(List<Movie> movieList) {
+    public void setMovieList(List<Movie> movieList, boolean isLocalList) {
         this.mMovieList = movieList;
+        this.mIsLocalList = isLocalList;
         this.notifyDataSetChanged();
     }
 
@@ -47,13 +52,23 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
     public void onBindViewHolder(@NonNull MovieViewHolder holder, int position) {
         //Get the movie for the current position
         Movie currMovie = mMovieList.get(position);
-
-        //Display image
         Context context = (Context)mMovieClickListener;
-        Picasso.with(context)
-                .load(NetworkUtils.POSTER_BASE_URL + currMovie.getPosterString())
-                .error(R.drawable.ic_missing_image_error) //Displays this image if image failed to load
-                .into(holder.mMoviePosterImageView);
+
+        //If the movieList is from the local database, retrieve the image locally, otherwise
+        //use Picasso to retrieve the image
+        if (mIsLocalList) {
+            Bitmap currBitmap = new ImageIO(context)
+                    .setDirectoryName(LocalImageConstants.DIRECTORY_NAME)
+                    .setFileName(String.valueOf(currMovie.getId()))
+                    .load();
+
+            holder.mMoviePosterImageView.setImageBitmap(currBitmap);
+        } else {
+            Picasso.with(context)
+                    .load(NetworkUtils.POSTER_BASE_URL + currMovie.getPosterString())
+                    .error(R.drawable.ic_missing_image_error) //Displays this image if image failed to load
+                    .into(holder.mMoviePosterImageView);
+        }
 
         //Display the title
         holder.mMovieTitleTextView.setText(currMovie.getOriginalTitle());

@@ -12,9 +12,6 @@ public abstract class AppDatabase extends RoomDatabase {
     private static final Object LOCK = new Object();
     private static AppDatabase instance;
 
-    private AppDatabase() {
-    }
-
     public static AppDatabase getInstance(Context context) {
         if (instance == null) {
             synchronized (LOCK) {

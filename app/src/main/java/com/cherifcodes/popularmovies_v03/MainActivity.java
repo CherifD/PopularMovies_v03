@@ -1,11 +1,14 @@
 package com.cherifcodes.popularmovies_v03;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,6 +23,7 @@ import com.cherifcodes.popularmovies_v03.model.Movie;
 import com.cherifcodes.popularmovies_v03.utils.IntentConstants;
 import com.cherifcodes.popularmovies_v03.utils.JsonToMovieList;
 import com.cherifcodes.popularmovies_v03.utils.NetworkUtils;
+import com.cherifcodes.popularmovies_v03.viewModels.MainActivityViewModel;
 
 import java.net.URL;
 import java.util.List;
@@ -48,19 +52,28 @@ public class MainActivity extends AppCompatActivity implements MovieClickListene
         mMovieListRecyclerView.setLayoutManager(layoutManager);
         mMovieListRecyclerView.setAdapter(mMovieAdapter);
 
-        // Save internet connection information in a boolean variable
+        if (this.isConnectedToTheInternet()) { // There is an internet connection
+            // Start the AsyncTask to fetch the data in parallel
+            loadRemoteMovieList();
+        } else { // There is no internet connection, show a toast message.
+            Toast.makeText(this, R.string.no_internet_error_message,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     * Determines if the device is connected to the internet
+     *
+     * @return true if there is a network connection, false otherwise
+     */
+    private boolean isConnectedToTheInternet() {
         ConnectivityManager cm =
                 (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
-        if (isConnected) { // There is an internet connection
-            // Start the AsyncTask to fetch the data in parallel
-            getMovieList();
-        } else { // There is no internet connection, show a toast message.
-            Toast.makeText(this, R.string.no_internet_error_message, Toast.LENGTH_LONG)
-                    .show();
+        if (cm != null) {
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            return (activeNetwork != null && activeNetwork.isConnectedOrConnecting());
         }
+        return false;
     }
 
     @Override
@@ -76,10 +89,12 @@ public class MainActivity extends AppCompatActivity implements MovieClickListene
 
         if (itemId == R.id.item_popularity_sort) {
             mSortMovieListBy = NetworkUtils.BASE_URL_POPULAR;
-            getMovieList();
+            loadRemoteMovieList();
         } else if (itemId == R.id.item_top_rated_sort) {
             mSortMovieListBy = NetworkUtils.BASE_URL_TOP_RATED;
-            getMovieList();
+            loadRemoteMovieList();
+        } else if (itemId == R.id.item_favorites) {
+            loadFavoriteMovieList();
         } else {
             //This condition is unlikely to occur, but I handle it just for completeness.
             Toast.makeText(this, R.string.unknown_sort_message, Toast.LENGTH_LONG).show();
@@ -87,17 +102,42 @@ public class MainActivity extends AppCompatActivity implements MovieClickListene
         return super.onOptionsItemSelected(item);
     }
 
-    private void getMovieList() {
+    private void loadFavoriteMovieList() {
+        MainActivityViewModel viewModel = ViewModelProviders.of(this).get(
+                MainActivityViewModel.class);
+        viewModel.getMovieList().observe(this, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(@Nullable List<Movie> movies) {
+                mMovieAdapter.setMovieList(movies, true);
+            }
+        });
+    }
+
+    private void loadRemoteMovieList() {
         new MovieAsyncTast().execute(mSortMovieListBy);
+        MainActivityViewModel viewModel = ViewModelProviders.of(this)
+                .get(MainActivityViewModel.class);
+        viewModel.getMovieList().observe(this, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(@Nullable List<Movie> movies) {
+
+            }
+        });
     }
 
     @Override
     public void onMovieClicked(Movie clickedMovie) {
-        Bundle bundle = new Bundle();
-        bundle.putParcelable(IntentConstants.CLICKED_MOVIE_ITEM, clickedMovie);
-        Intent intent = new Intent(MainActivity.this, MovieDetailsActivity.class);
-        intent.putExtra(IntentConstants.BUNDLE_KEY, bundle);
-        this.startActivity(intent);
+
+        if (this.isConnectedToTheInternet()) {
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(IntentConstants.CLICKED_MOVIE_ITEM, clickedMovie);
+            Intent intent = new Intent(MainActivity.this, MovieDetailsActivity.class);
+            intent.putExtra(IntentConstants.BUNDLE_KEY, bundle);
+            this.startActivity(intent);
+        } else {
+            Toast.makeText(this, R.string.no_internet_error_message,
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     private class MovieAsyncTast extends AsyncTask<String, Void, List<Movie>> {
@@ -115,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements MovieClickListene
         @Override
         protected void onPostExecute(List<Movie> currMovieList) {
             if (currMovieList != null) {
-                mMovieAdapter.setMovieList(currMovieList);
+                mMovieAdapter.setMovieList(currMovieList, false);
             }
         }
     }

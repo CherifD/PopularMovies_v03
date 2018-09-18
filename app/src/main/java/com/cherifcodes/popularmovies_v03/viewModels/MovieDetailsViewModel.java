@@ -10,26 +10,30 @@ import com.cherifcodes.popularmovies_v03.model.Repository;
 
 import java.util.List;
 
-public class MainActivityViewModel extends AndroidViewModel {
+public class MovieDetailsViewModel extends AndroidViewModel {
 
-    private LiveData<List<Movie>> mMovieList;
+    private LiveData<List<Movie>> mLocalMovieList;
     private Repository mRepository;
 
-    public MainActivityViewModel(@NonNull Application application) {
+    public MovieDetailsViewModel(@NonNull Application application) {
         super(application);
         mRepository = Repository.getInstance(application);
-        mMovieList = mRepository.loadAllMovies();
+        mLocalMovieList = mRepository.loadAllMovies();
     }
 
-    public void insertMovie(Movie movie) {
-        mRepository.insertMovie(movie);
+    public LiveData<List<Movie>> getLocalMovieList() {
+        return mLocalMovieList;
+    }
+
+    public void updateMovie(Movie movie) {
+        mRepository.updateMovie(movie);
     }
 
     public void deleteMovie(Movie movie) {
         mRepository.deleteMovie(movie);
     }
 
-    public LiveData<List<Movie>> getMovieList() {
-        return mMovieList;
+    public void insertMovie(Movie movie) {
+        mRepository.insertMovie(movie);
     }
 }

@@ -1,11 +1,14 @@
 package com.cherifcodes.popularmovies_v03;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -24,9 +27,11 @@ import com.cherifcodes.popularmovies_v03.utils.ImageIO;
 import com.cherifcodes.popularmovies_v03.utils.IntentConstants;
 import com.cherifcodes.popularmovies_v03.utils.JsonToMovieList;
 import com.cherifcodes.popularmovies_v03.utils.NetworkUtils;
+import com.cherifcodes.popularmovies_v03.viewModels.MovieDetailsViewModel;
 import com.squareup.picasso.Picasso;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -43,8 +48,14 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
     RecyclerView movieTrailerRecycleView;
     @BindView(R.id.rv_movie_review)
     RecyclerView movieReviewsRecycleView;
+    @BindView(R.id.tgb_like_movie)
+    ToggleButton toggle;
 
     private int mMovieId;
+    MovieDetailsViewModel mViewModel;
+    private Movie mMovie;
+    private ArrayList<Movie> mFavoriteMovieList = new ArrayList<>();
+
     private MovieTrailerAdapter mMovieTrailerAdapter;
     private MovieReviewAdapter mMovieReviewAdapter;
 
@@ -57,18 +68,18 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
         ButterKnife.bind(this);
 
         Bundle bundle = getIntent().getBundleExtra(IntentConstants.BUNDLE_KEY);
-        Movie clickedMovie = bundle.getParcelable(IntentConstants.CLICKED_MOVIE_ITEM);
+        mMovie = bundle.getParcelable(IntentConstants.CLICKED_MOVIE_ITEM);
 
-        if (clickedMovie != null) {
-            mOriginalTitleTextView.setText(clickedMovie.getOriginalTitle());
-            mOverviewTextView.setText(clickedMovie.getOverview());
-            mReleaseDateTextView.append(clickedMovie.getReleaseDate());
-            mVoteAverage.append(String.valueOf(clickedMovie.getVoteAverage()));
+        if (mMovie != null) {
+            mOriginalTitleTextView.setText(mMovie.getOriginalTitle());
+            mOverviewTextView.setText(mMovie.getOverview());
+            mReleaseDateTextView.append(mMovie.getReleaseDate());
+            mVoteAverage.append(String.valueOf(mMovie.getVoteAverage()));
 
-            mMovieId = clickedMovie.getId();
+            mMovieId = mMovie.getId();
             //Load and display the movie poster using the Picasso library.
             Picasso.with(this)
-                    .load(NetworkUtils.POSTER_BASE_URL + clickedMovie.getPosterString())
+                    .load(NetworkUtils.POSTER_BASE_URL + mMovie.getPosterString())
                     .error(R.drawable.ic_missing_image_error) //Displays this image if image failed to load
                     .into(mPosterImageView);
 
@@ -86,7 +97,19 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
             new MovieTrailerAsynTask().execute(NetworkUtils.DETAIL_VIDEO_TRAILERS);
             new MovieReviewAsyncTask().execute(NetworkUtils.DETAIL_REVIEWS);
 
-            ToggleButton toggle = findViewById(R.id.tgb_like_movie);
+            mViewModel = ViewModelProviders.of(this)
+                    .get(MovieDetailsViewModel.class);
+            mViewModel.getLocalMovieList().observe(this, new Observer<List<Movie>>() {
+                @Override
+                public void onChanged(@Nullable List<Movie> movies) {
+                    mFavoriteMovieList = (ArrayList<Movie>) movies;
+
+                    if (mMovie.isFavoriteMovie(mFavoriteMovieList))
+                        toggle.setChecked(true);
+                }
+            });
+
+
             toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     Toast toast = Toast.makeText(MovieDetailsActivity.this,
@@ -94,12 +117,16 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
                     if (isChecked) {
                         Bitmap currPosterImage = ((BitmapDrawable) mPosterImageView.getDrawable())
                                 .getBitmap();
-                        likeMovie(currPosterImage);
-                        toast.show();
+                        if (!mFavoriteMovieList.contains(mMovie)) {
+                            likeMovie(currPosterImage);
+                            toast.show();
+                        } else {
+                            toast.setText("You have already liked this movie.");
+                        }
                     } else {
+                        unlikeMovie();
                         toast.setText("Movie has been un-liked.");
                         toast.show();
-                        unlikeMovie();
                     }
                 }
             });
@@ -108,6 +135,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
             Log.e(MovieDetailsActivity.class.getSimpleName(), "Null clickedMovie");
         }
     }
+
 
     /**
      * Saves the movie to the local database and the specified image to internal storage
@@ -120,7 +148,10 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
                 .setFileName(String.valueOf(mMovieId))
                 .save(bitmapImage);
 
-        //TODO save the movie to the local database
+        // save the movie to the local database
+        if (mMovie != null) {
+            mViewModel.insertMovie(mMovie);
+        }
     }
 
     /**
@@ -132,7 +163,10 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
                 .setFileName(String.valueOf(mMovieId))
                 .deleteFile();
 
-        //TODO delete the move from local database
+        //Delete the move from local database
+        if (mMovie != null) {
+            mViewModel.deleteMovie(mMovie);
+        }
     }
 
     @Override
@@ -156,9 +190,8 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
             URL reviewsUrl = NetworkUtils.buildMovieDetailUrlFromId(mMovieId,
                     NetworkUtils.DETAIL_REVIEWS);
             String reviewsJson = NetworkUtils.getJsonResponse(reviewsUrl);
-            List<String> reviewsList = JsonToMovieList.getMovieDetailListFromJson(reviewsJson,
+            return JsonToMovieList.getMovieDetailListFromJson(reviewsJson,
                     JsonToMovieList.REVIEWS_DETAIL_KEY);
-            return reviewsList;
         }
 
         @Override
@@ -177,9 +210,8 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
             URL trailerUrl = NetworkUtils.buildMovieDetailUrlFromId(mMovieId,
                     NetworkUtils.DETAIL_VIDEO_TRAILERS);
             String trailerJson = NetworkUtils.getJsonResponse(trailerUrl);
-            List<String> trailerList = JsonToMovieList.getMovieDetailListFromJson(trailerJson,
+            return JsonToMovieList.getMovieDetailListFromJson(trailerJson,
                     JsonToMovieList.VIDEO_TRAILER_DETAIL_KEY);
-            return trailerList;
         }
 
         @Override

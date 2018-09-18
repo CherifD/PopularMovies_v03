@@ -6,9 +6,11 @@ import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.List;
+
 @Entity (tableName = "movie")
-public class Movie implements Parcelable{
-    @PrimaryKey(autoGenerate = true)
+public class Movie implements Parcelable {
+    @PrimaryKey
     private int id;
     private String mOriginalTitle;
     private String mPosterString;
@@ -19,16 +21,6 @@ public class Movie implements Parcelable{
     public Movie(int id, String originalTitle, String posterString, String releaseDate,
                  String mOverview, double voteAverage) {
         this.id = id;
-        this.mOriginalTitle = originalTitle;
-        this.mPosterString = posterString;
-        this.mReleaseDate = releaseDate;
-        this.mOverview = mOverview;
-        this.mVoteAverage = voteAverage;
-    }
-
-    @Ignore
-    public Movie(String originalTitle, String posterString, String releaseDate,
-                 String mOverview, double voteAverage) {
         this.mOriginalTitle = originalTitle;
         this.mPosterString = posterString;
         this.mReleaseDate = releaseDate;
@@ -72,6 +64,16 @@ public class Movie implements Parcelable{
     }
 
     @Ignore
+    @Override
+    public boolean equals(Object object) {
+        if (object != null && (object instanceof Movie)) {
+            Movie movie = (Movie) object;
+            return movie.id == this.id;
+        }
+        return false;
+    }
+
+    @Ignore
     public Movie(Parcel in) {
         this.id = in.readInt();
         this.mOriginalTitle = in.readString();
@@ -107,5 +109,14 @@ public class Movie implements Parcelable{
         parcel.writeString(this.mPosterString);
         parcel.writeString(this.mReleaseDate);
         parcel.writeDouble(this.mVoteAverage);
+    }
+
+    @Ignore
+    public boolean isFavoriteMovie(List<Movie> movieList) {
+        for (Movie movie : movieList) {
+            if (this.equals(movie))
+                return true;
+        }
+        return false;
     }
 }
