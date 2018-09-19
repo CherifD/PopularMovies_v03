@@ -26,6 +26,7 @@ import com.cherifcodes.popularmovies_v03.utils.NetworkUtils;
 import com.cherifcodes.popularmovies_v03.viewModels.MainActivityViewModel;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -36,6 +37,9 @@ public class MainActivity extends AppCompatActivity implements MovieClickListene
     @BindView(R.id.rv_movie_list) RecyclerView mMovieListRecyclerView;
     private static final int NUM_RECYCLER_VIEW_COLUMNS = 2;
     private MovieAdapter mMovieAdapter;
+    private List<Movie> mMovieList = new ArrayList<>();
+    //Monitors whether mMovieList is from a local or remote database
+    private boolean mIsLocalList;
 
     String mSortMovieListBy = NetworkUtils.BASE_URL_POPULAR;
 
@@ -52,8 +56,13 @@ public class MainActivity extends AppCompatActivity implements MovieClickListene
         mMovieListRecyclerView.setLayoutManager(layoutManager);
         mMovieListRecyclerView.setAdapter(mMovieAdapter);
 
-        if (this.isConnectedToTheInternet()) { // There is an internet connection
-            // Start the AsyncTask to fetch the data in parallel
+        if (savedInstanceState != null) { // App state needs to be restored
+            mMovieList = savedInstanceState.getParcelableArrayList(
+                    IntentConstants.SAVED_INSTANCE_MOVIE_LIST_KEY);
+            mIsLocalList = savedInstanceState.getBoolean(
+                    IntentConstants.SAVED_IS_LOCAL_LIST_KEY);
+            mMovieAdapter.setMovieList(mMovieList, mIsLocalList);
+        } else if (this.isConnectedToTheInternet()) { // There is an internet connection
             loadRemoteMovieList();
         } else { // There is no internet connection, show a toast message.
             Toast.makeText(this, R.string.no_internet_error_message,
@@ -74,6 +83,14 @@ public class MainActivity extends AppCompatActivity implements MovieClickListene
             return (activeNetwork != null && activeNetwork.isConnectedOrConnecting());
         }
         return false;
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        ArrayList<Movie> savedMovieList = (ArrayList<Movie>) mMovieList;
+        outState.putParcelableArrayList(IntentConstants.SAVED_INSTANCE_MOVIE_LIST_KEY, savedMovieList);
+        outState.putBoolean(IntentConstants.SAVED_IS_LOCAL_LIST_KEY, mIsLocalList);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -108,21 +125,15 @@ public class MainActivity extends AppCompatActivity implements MovieClickListene
         viewModel.getMovieList().observe(this, new Observer<List<Movie>>() {
             @Override
             public void onChanged(@Nullable List<Movie> movies) {
-                mMovieAdapter.setMovieList(movies, true);
+                mMovieList = movies;
+                mIsLocalList = true;
+                mMovieAdapter.setMovieList(mMovieList, mIsLocalList);
             }
         });
     }
 
     private void loadRemoteMovieList() {
         new MovieAsyncTast().execute(mSortMovieListBy);
-        MainActivityViewModel viewModel = ViewModelProviders.of(this)
-                .get(MainActivityViewModel.class);
-        viewModel.getMovieList().observe(this, new Observer<List<Movie>>() {
-            @Override
-            public void onChanged(@Nullable List<Movie> movies) {
-
-            }
-        });
     }
 
     @Override
@@ -158,7 +169,9 @@ public class MainActivity extends AppCompatActivity implements MovieClickListene
         @Override
         protected void onPostExecute(List<Movie> currMovieList) {
             if (currMovieList != null) {
-                mMovieAdapter.setMovieList(currMovieList, false);
+                mMovieList = currMovieList;
+                mIsLocalList = false;
+                mMovieAdapter.setMovieList(mMovieList, mIsLocalList);
             }
         }
     }
