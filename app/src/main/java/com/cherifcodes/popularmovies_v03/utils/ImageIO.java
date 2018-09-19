@@ -12,6 +12,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+/**
+ * Utility class for performing image input output.
+ * Adapted from a StackOverflow post
+ */
 public class ImageIO {
 
     private String directoryName = "images";

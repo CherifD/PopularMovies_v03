@@ -10,4 +10,7 @@
     <string name="trailer_title">Trailer</string>
     <string name="toggle_button_off_message">like movie</string>
     <string name="toggle_button_on_message">un-like</string>
+    <string name="movie_saved_message">Saved movie.</string>
+    <string name="movie_already_saved_msg">You have already liked this movie.</string>
+    <string name="movie_unliked_message">Movie has been un-liked.</string>
 </resources>

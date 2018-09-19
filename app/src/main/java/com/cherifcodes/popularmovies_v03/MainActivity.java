@@ -140,6 +140,9 @@ public class MainActivity extends AppCompatActivity implements MovieClickListene
         }
     }
 
+    /**
+     * Loads movies from the remote database in a non-UI thread.
+     */
     private class MovieAsyncTast extends AsyncTask<String, Void, List<Movie>> {
 
         @Override

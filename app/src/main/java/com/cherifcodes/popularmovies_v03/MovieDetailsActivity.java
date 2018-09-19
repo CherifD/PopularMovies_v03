@@ -26,6 +26,7 @@ import com.cherifcodes.popularmovies_v03.model.Movie;
 import com.cherifcodes.popularmovies_v03.utils.ImageIO;
 import com.cherifcodes.popularmovies_v03.utils.IntentConstants;
 import com.cherifcodes.popularmovies_v03.utils.JsonToMovieList;
+import com.cherifcodes.popularmovies_v03.utils.LocalImageConstants;
 import com.cherifcodes.popularmovies_v03.utils.NetworkUtils;
 import com.cherifcodes.popularmovies_v03.viewModels.MovieDetailsViewModel;
 import com.squareup.picasso.Picasso;
@@ -54,12 +55,10 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
     private int mMovieId;
     MovieDetailsViewModel mViewModel;
     private Movie mMovie;
-    private ArrayList<Movie> mFavoriteMovieList = new ArrayList<>();
+    private List<Movie> mFavoriteMovieList = new ArrayList<>();
 
     private MovieTrailerAdapter mMovieTrailerAdapter;
     private MovieReviewAdapter mMovieReviewAdapter;
-
-    public static final String DIRECTORY_NAME = "movie_posters";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,59 +82,69 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
                     .error(R.drawable.ic_missing_image_error) //Displays this image if image failed to load
                     .into(mPosterImageView);
 
-            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-            RecyclerView.LayoutManager reviewsLayoutManager = new LinearLayoutManager(this);
-            movieReviewsRecycleView.setLayoutManager(reviewsLayoutManager);
-            movieTrailerRecycleView.setLayoutManager(layoutManager);
+            setUpTheRecyclerViews();
 
-            mMovieTrailerAdapter = new MovieTrailerAdapter(this);
-            mMovieReviewAdapter = new MovieReviewAdapter();
-
-            movieTrailerRecycleView.setAdapter(mMovieTrailerAdapter);
-            movieReviewsRecycleView.setAdapter(mMovieReviewAdapter);
-
-            new MovieTrailerAsynTask().execute(NetworkUtils.DETAIL_VIDEO_TRAILERS);
+            new MovieTrailerAsyncTask().execute(NetworkUtils.DETAIL_VIDEO_TRAILERS);
             new MovieReviewAsyncTask().execute(NetworkUtils.DETAIL_REVIEWS);
 
-            mViewModel = ViewModelProviders.of(this)
-                    .get(MovieDetailsViewModel.class);
-            mViewModel.getLocalMovieList().observe(this, new Observer<List<Movie>>() {
-                @Override
-                public void onChanged(@Nullable List<Movie> movies) {
-                    mFavoriteMovieList = (ArrayList<Movie>) movies;
+            setUpViewModel();
 
-                    if (mMovie.isFavoriteMovie(mFavoriteMovieList))
-                        toggle.setChecked(true);
-                }
-            });
-
-
-            toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    Toast toast = Toast.makeText(MovieDetailsActivity.this,
-                            "Saved movie.", Toast.LENGTH_LONG);
-                    if (isChecked) {
-                        Bitmap currPosterImage = ((BitmapDrawable) mPosterImageView.getDrawable())
-                                .getBitmap();
-                        if (!mFavoriteMovieList.contains(mMovie)) {
-                            likeMovie(currPosterImage);
-                            toast.show();
-                        } else {
-                            toast.setText("You have already liked this movie.");
-                        }
-                    } else {
-                        unlikeMovie();
-                        toast.setText("Movie has been un-liked.");
-                        toast.show();
-                    }
-                }
-            });
+            handleFavoriteMovieEvents();
 
         } else {
             Log.e(MovieDetailsActivity.class.getSimpleName(), "Null clickedMovie");
         }
     }
 
+    private void setUpTheRecyclerViews() {
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        RecyclerView.LayoutManager reviewsLayoutManager = new LinearLayoutManager(this);
+        movieReviewsRecycleView.setLayoutManager(reviewsLayoutManager);
+        movieTrailerRecycleView.setLayoutManager(layoutManager);
+
+        mMovieTrailerAdapter = new MovieTrailerAdapter(this);
+        mMovieReviewAdapter = new MovieReviewAdapter();
+
+        movieTrailerRecycleView.setAdapter(mMovieTrailerAdapter);
+        movieReviewsRecycleView.setAdapter(mMovieReviewAdapter);
+    }
+
+    private void handleFavoriteMovieEvents() {
+        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Toast toast = Toast.makeText(MovieDetailsActivity.this,
+                        R.string.movie_saved_message, Toast.LENGTH_LONG);
+                if (isChecked) { // User wants to save the movie as a favorite
+                    Bitmap currPosterImage = ((BitmapDrawable) mPosterImageView.getDrawable())
+                            .getBitmap();
+                    if (!mFavoriteMovieList.contains(mMovie)) {
+                        likeMovie(currPosterImage);
+                        toast.show();
+                    } else {
+                        toast.setText(R.string.movie_already_saved_msg);
+                    }
+                } else { // User does not like the movie.
+                    unlikeMovie();
+                    toast.setText(R.string.movie_unliked_message);
+                    toast.show();
+                }
+            }
+        });
+    }
+
+    private void setUpViewModel() {
+        mViewModel = ViewModelProviders.of(this)
+                .get(MovieDetailsViewModel.class);
+        mViewModel.getLocalMovieList().observe(this, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(@Nullable List<Movie> movies) {
+                mFavoriteMovieList = movies;
+
+                if (mMovie.isFavoriteMovie(mFavoriteMovieList))
+                    toggle.setChecked(true);
+            }
+        });
+    }
 
     /**
      * Saves the movie to the local database and the specified image to internal storage
@@ -144,7 +153,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
      */
     private void likeMovie(Bitmap bitmapImage) {
         new ImageIO(this)
-                .setDirectoryName(DIRECTORY_NAME)
+                .setDirectoryName(LocalImageConstants.DIRECTORY_NAME)
                 .setFileName(String.valueOf(mMovieId))
                 .save(bitmapImage);
 
@@ -159,29 +168,33 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
      */
     private void unlikeMovie() {
         new ImageIO(this)
-                .setDirectoryName(DIRECTORY_NAME)
+                .setDirectoryName(LocalImageConstants.DIRECTORY_NAME)
                 .setFileName(String.valueOf(mMovieId))
                 .deleteFile();
 
-        //Delete the move from local database
+        //Delete the movie from local database
         if (mMovie != null) {
             mViewModel.deleteMovie(mMovie);
         }
     }
 
+    /**
+     * Plays the Youtube movie trailer located at a specified Youtube video link
+     *
+     * @param trailerLink the specified Youtube video link
+     */
     @Override
     public void OnTrailerClicked(String trailerLink) {
         Uri webpage = Uri.parse(NetworkUtils.YOUTUBE_BASE_URL + trailerLink);
-
-        Log.i(getClass().getSimpleName(), webpage.toString());
-
         Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
-
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
         }
     }
 
+    /**
+     * Loads the movie's reviews
+     */
     private class MovieReviewAsyncTask extends AsyncTask<String, Void, List<String>> {
 
         @Override
@@ -202,7 +215,10 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerCl
         }
     }
 
-    private class MovieTrailerAsynTask extends AsyncTask<String, Void, List<String>> {
+    /**
+     * Loads the movie's trailer video links
+     */
+    private class MovieTrailerAsyncTask extends AsyncTask<String, Void, List<String>> {
 
         @Override
         protected List<String> doInBackground(String... strings) {
