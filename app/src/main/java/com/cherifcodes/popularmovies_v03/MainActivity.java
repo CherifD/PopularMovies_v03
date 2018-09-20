@@ -67,7 +67,15 @@ public class MainActivity extends AppCompatActivity implements MovieClickListene
         } else { // There is no internet connection, show a toast message.
             Toast.makeText(this, R.string.no_internet_error_message,
                     Toast.LENGTH_LONG).show();
+            loadFavoriteMovieList();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!this.isConnectedToTheInternet())
+            this.loadFavoriteMovieList();
     }
 
     /**
@@ -104,17 +112,21 @@ public class MainActivity extends AppCompatActivity implements MovieClickListene
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
 
-        if (itemId == R.id.item_popularity_sort) {
-            mSortMovieListBy = NetworkUtils.BASE_URL_POPULAR;
-            loadRemoteMovieList();
-        } else if (itemId == R.id.item_top_rated_sort) {
-            mSortMovieListBy = NetworkUtils.BASE_URL_TOP_RATED;
-            loadRemoteMovieList();
+        if (this.isConnectedToTheInternet()) {
+            if (itemId == R.id.item_popularity_sort) {
+                mSortMovieListBy = NetworkUtils.BASE_URL_POPULAR;
+                loadRemoteMovieList();
+            } else if (itemId == R.id.item_top_rated_sort) {
+                mSortMovieListBy = NetworkUtils.BASE_URL_TOP_RATED;
+                loadRemoteMovieList();
+            } else if (itemId == R.id.item_favorites) {
+                loadFavoriteMovieList();
+            }
         } else if (itemId == R.id.item_favorites) {
             loadFavoriteMovieList();
-        } else {
-            //This condition is unlikely to occur, but I handle it just for completeness.
-            Toast.makeText(this, R.string.unknown_sort_message, Toast.LENGTH_LONG).show();
+        } else { // Network request in the absence of internet connection
+            Toast.makeText(this, R.string.no_internet_error_message,
+                    Toast.LENGTH_LONG).show();
         }
         return super.onOptionsItemSelected(item);
     }

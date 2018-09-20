@@ -13,4 +13,8 @@
     <string name="movie_saved_message">Saved movie.</string>
     <string name="movie_already_saved_msg">You have already liked this movie.</string>
     <string name="movie_unliked_message">Movie has been un-liked.</string>
+    <string name="dispay_favorites">display favorites</string>
+    <string name="error_displaying_the_movie_poster">Error displaying the movie poster</string>
+    <string name="trailers">Trailers</string>
+    <string name="reviews">Reviews</string>
 </resources>

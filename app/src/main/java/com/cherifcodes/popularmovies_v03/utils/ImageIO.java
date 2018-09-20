@@ -13,13 +13,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * Utility class for performing image input output.
+ * Utility class for performing image input output operations.
  * Adapted from a StackOverflow post
  */
 public class ImageIO {
 
     private String directoryName = "images";
     private String fileName = "image.png";
+    private static final int BITMAP_COMPRESS_QUANTITY = 100;
     private Context context;
     private boolean external;
 
@@ -57,7 +58,8 @@ public class ImageIO {
         FileOutputStream fileOutputStream = null;
         try {
             fileOutputStream = new FileOutputStream(createFile());
-            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, BITMAP_COMPRESS_QUANTITY,
+                    fileOutputStream);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

@@ -48,13 +48,4 @@ public class Repository {
     public LiveData<List<Movie>> loadAllMovies() {
         return db.getMovieDao().loadAllMovies();
     }
-
-    public void updateMovie(final Movie movie) {
-        mExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                db.getMovieDao().update(movie);
-            }
-        });
-    }
 }

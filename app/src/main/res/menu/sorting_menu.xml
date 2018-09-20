@@ -14,7 +14,7 @@
         app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/item_favorites"
-        android:title="dispay favorites"
+        android:title="@string/dispay_favorites"
         app:showAsAction="ifRoom" />
 
 </menu>

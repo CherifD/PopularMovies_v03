@@ -25,10 +25,6 @@ public class MovieDetailsViewModel extends AndroidViewModel {
         return mLocalMovieList;
     }
 
-    public void updateMovie(Movie movie) {
-        mRepository.updateMovie(movie);
-    }
-
     public void deleteMovie(Movie movie) {
         mRepository.deleteMovie(movie);
     }
